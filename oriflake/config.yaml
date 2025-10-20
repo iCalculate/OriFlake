@@ -1,0 +1,18 @@
+reference_deg: 0
+min_area_px: 100
+angle_tol_deg: 20
+sigma_deg: 5
+kmeans_k: 3
+bilateral_d: 7
+bilateral_sigC: 50
+bilateral_sigS: 50
+white_balance: false
+gamma: 1.0
+min_convexity: 0.6
+max_vertices: 7
+approx_epsilon_frac: 0.05
+morph_open: 2
+morph_close: 3
+union_top_n: 2
+max_area_ratio: 0.1
+
