@@ -1,12 +1,20 @@
 # OriFlake
 
-A tool for analyzing the orientation distribution of triangular MoS₂ flake edges in thin film micrographs.
+<p align="center">
+  <img src="images/OriFlakeLogo.png" alt="OriFlake Logo" width="180">
+</p>
 
-[中文版 README](README_CN.md)
+> A tool for analyzing the orientation distribution of triangular **TMDC** flake edges in thin-film micrographs.
+
+[简体中文 README](README_CN.md) • [Issues](../../issues) • [Releases](../../releases)
+
+---
 
 ## Overview
 
-OriFlake is designed to process micrograph images of thin films and statistically analyze the orientation distribution of flake edges. It supports both command-line and GUI interfaces, making it suitable for batch processing and interactive analysis.
+**OriFlake** processes micrographs of thin films and performs statistical analysis on the orientation distribution of flake edges.  
+It supports both a **command-line interface (CLI)** for batch processing and a **graphical user interface (GUI)** for interactive analysis.
+
 
 ## Features
 
@@ -98,7 +106,10 @@ Launch the graphical user interface:
 python oriflake_gui.py
 ```
 
+![GUIscreenshot](images\GUIscreenshot.png)
+
 The GUI provides:
+
 - Interactive image loading and processing
 - Real-time parameter adjustment
 - Step-by-step visualization of processing pipeline
@@ -108,6 +119,8 @@ The GUI provides:
 ## Implementation Details
 
 ### Processing Pipeline
+
+![Process](images\Process.png)
 
 The image processing pipeline consists of the following steps:
 
