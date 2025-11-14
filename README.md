@@ -1,110 +1,207 @@
-OriFlake – Triangular MoS₂ Orientation Scanner
-===========================================
+# OriFlake
 
-Overview
---------
-OriFlake automatically identifies triangular MoS₂ flakes from optical microscope images, extracts their edge orientations, computes alignment relative to 60° rotational symmetry, and visualizes distributions (rose plots and histograms). It batch-processes images and exports CSV results.
+A tool for analyzing the orientation distribution of triangular MoS₂ flake edges in thin film micrographs.
 
-Features
---------
-- Preprocessing with bilateral filter, optional gray-world white balance, gamma
-- K-means segmentation in Lab color space with morphological cleanup
-- Contour extraction, polygon approximation, and flake filtering
-- Edge orientation angles (0–180°), Δθ to 60° symmetry about a reference
-- Gaussian alignment score, overlays, rose plot and histogram
-- Batch mode over a folder of images; CSV export
+[中文版 README](README_CN.md)
 
-Project Structure
------------------
-```
-oriflake/
-  main.py
-  seg.py
-  geometry.py
-  viz.py
-  utils.py
-  config.yaml
-  images/
-    testImg/
-      ... your subfolders with images ...
-  outputs/
-```
-Outputs are saved by default to `OriFlake_outputs/` in the repository root.
+## Overview
 
-Installation
-------------
-Python 3.10+ recommended.
+OriFlake is designed to process micrograph images of thin films and statistically analyze the orientation distribution of flake edges. It supports both command-line and GUI interfaces, making it suitable for batch processing and interactive analysis.
+
+## Features
+
+- **Dual Interface**: Command-line tool for batch processing and modern GUI for interactive analysis
+- **Robust Image Processing**: Supports various image formats (8-bit, 16-bit, 32-bit, floating-point)
+- **Automatic Color Peak Detection**: Identifies dual color peaks from RGB histograms for thresholding
+- **Edge Detection & Line Fitting**: Advanced edge detection with Hough transform for line segment extraction
+- **Orientation Statistics**: Comprehensive statistical analysis of edge orientations
+- **Visualization**: Generates overlay images, edge maps, histograms, and statistical plots
+
+## Installation
+
+### Prerequisites
+
+- Python 3.7 or higher
+- pip package manager
+
+### Install Dependencies
 
 ```bash
-python -m venv .venv
-. .venv/Scripts/activate  # on Windows PowerShell: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-Usage
------
+## Configuration
+
+The project uses a YAML configuration file (`oriflake/config.yaml`) to control processing parameters. Key configuration sections include:
+
+### File Paths
+- `input`: Input image path (file or directory)
+- `output`: Output directory path
+
+### Image Preprocessing
+- `crop_ratio`: Center region crop ratio (0.3 means crop 30% from edges, keeping center 70%)
+- `threshold_offset`: Threshold offset for fine-tuning binarization (positive = higher threshold, negative = lower)
+
+### Segmentation Parameters
+- `morph_open_ks`: Morphological opening kernel size for noise removal
+- `morph_close_ks`: Morphological closing kernel size (0 = disabled)
+
+### Edge Detection Parameters
+- `boundary_kernel_size`: Morphological kernel size for boundary extraction
+- `edge_cleanup_kernel_size`: Kernel size for edge cleanup
+- `min_contour_area`: Minimum contour area (pixels) for filtering small edge regions
+
+### Line Fitting Parameters
+- `min_line_length`: Minimum line segment length (pixels)
+- `max_line_gap`: Maximum gap between line segments (pixels)
+- `hough_threshold`: Hough transform threshold
+- `min_segment_distance`: Minimum distance between segments to avoid duplicate counting
+
+### Other Options
+- `verbose`: Enable detailed logging
+- `preview`: Show preview window during processing
+
+## Usage
+
+### Command-Line Interface
+
+Basic usage with default configuration:
+
 ```bash
-# Basic usage (uses default config)
 python -m oriflake.main
-
-# With custom paths
-python -m oriflake.main --input images/testImg --output OriFlake_outputs
-
-# Using preset detection profiles
-python -m oriflake.main --profile loose    # Most sensitive detection
-python -m oriflake.main --profile balanced  # Default balanced settings (recommended)
-python -m oriflake.main --profile strict   # Conservative detection
-
-# Fine-tune detection parameters
-python -m oriflake.main --min-area 100 --min-convexity 0.75 --max-vertices 7
-
-# Single image analysis
-python -m oriflake.main --input "images/testImg/20251016 r1 small S 140 Mo 700/7.png"
 ```
 
-Flags
------
-- `--preview` to open preview windows showing overlays while processing
-- `--profile {loose,balanced,strict}` to use preset detection profiles
-- `--min-area N` to set minimum flake area in pixels
-- `--min-convexity F` to set minimum convexity (0-1)
-- `--max-vertices N` to set maximum polygon vertices
-- `--approx-epsilon F` to set polygon approximation tolerance
-- `--union-top-n N` to union top N k-means clusters
-- `--morph-open N` and `--morph-close N` for morphology kernel sizes
+With custom configuration file:
 
-CSV Schema
-----------
-`image, flake_id, edge_id, theta_deg, delta_deg, score, center_x, center_y, area_px`
-
-Configuration
--------------
-See `oriflake/config.yaml` for tunable parameters (k-means k, bilateral filter settings, reference angle, etc.).
-
-Detection Parameters
---------------------
-- `min_area_px`: Minimum flake area in pixels (default: 100)
-- `min_convexity`: Minimum convexity ratio 0-1 (default: 0.6)
-- `max_vertices`: Maximum polygon vertices (default: 7)
-- `approx_epsilon_frac`: Polygon approximation tolerance (default: 0.05)
-- `union_top_n`: Union top N k-means clusters (default: 2)
-- `morph_open`/`morph_close`: Morphology kernel sizes (default: 2/3)
-- `max_area_ratio`: Maximum flake area as fraction of image (default: 0.1)
-
-Function Signatures
-------------------
-```python
-# Core processing functions
-def process_image(img_path: str, cfg: Dict) -> Dict
-def find_candidate_polygons(mask, min_area_px=800, min_convexity=0.80, max_vertices=6, approx_epsilon_frac=0.02) -> List[Dict]
-def edge_angles_from_polygon(approx) -> List[Tuple[int, float, Tuple[float, float]]]
-def kmeans_segment_lab(lab_img, k=3, attempts=3) -> Tuple[np.ndarray, np.ndarray]
-def preprocess_image(raw_bgr, bilateral_d, bilateral_sigC, bilateral_sigS, apply_wb=False, gamma=1.0) -> Tuple[np.ndarray, np.ndarray]
+```bash
+python -m oriflake.main --config path/to/config.yaml
 ```
 
-Notes
------
-- Place test images in `oriflake/images/testImg/` (subfolders supported) or point `--input` to your folder
-- Outputs (overlays, plots, CSV) will be written to `OriFlake_outputs/`
+Override configuration parameters:
 
+```bash
+python -m oriflake.main --input path/to/images --output path/to/output --verbose
+```
+
+Available command-line arguments:
+- `--config`: Path to configuration file (overrides default config.yaml)
+- `--input`: Input image path or directory (overrides config)
+- `--output`: Output directory (overrides config)
+- `--preview`: Show preview window (overrides config)
+- `--verbose`: Print detailed logs (overrides config)
+
+### GUI Interface
+
+Launch the graphical user interface:
+
+```bash
+python oriflake_gui.py
+```
+
+The GUI provides:
+- Interactive image loading and processing
+- Real-time parameter adjustment
+- Step-by-step visualization of processing pipeline
+- Incremental processing from specific steps
+- Export of results and visualizations
+
+## Implementation Details
+
+### Processing Pipeline
+
+The image processing pipeline consists of the following steps:
+
+1. **Image Loading & Preprocessing**
+   - Load image in original bit depth
+   - Convert to 8-bit format (0-255 range per channel)
+   - Support for various formats: 8-bit, 16-bit, 24-bit RGB, 32-bit, floating-point
+
+2. **Color Peak Detection**
+   - Analyze RGB histogram of full image
+   - Identify dual color peaks (color1, color2) for threshold calculation
+   - Use full image to avoid missing edge peaks after cropping
+
+3. **Center Region Cropping**
+   - Crop center region based on `crop_ratio` parameter
+   - Reduces processing area and focuses on central region
+
+4. **Blue Channel Extraction & Thresholding**
+   - Extract blue channel from cropped RGB image
+   - Calculate threshold from dual peak average
+   - Apply threshold offset for fine-tuning
+   - Generate binary mask
+
+5. **Edge Detection & Enhancement**
+   - Extract boundaries from binary mask
+   - Apply morphological operations for cleanup
+   - Filter small contours and border regions
+   - Enhance edges using robust algorithms
+
+6. **Line Segment Fitting**
+   - Apply Hough transform to detect line segments
+   - Filter segments by minimum length and maximum gap
+   - Remove duplicate segments based on distance threshold
+   - Extract orientation angles from line segments
+
+7. **Statistics & Visualization**
+   - Calculate orientation statistics
+   - Generate overlay images with detected edges
+   - Create histograms and statistical plots
+   - Export results to CSV format
+
+### Output Files
+
+For each processed image, the tool generates:
+- `{filename}_overlay.png`: Original image with detected edges overlaid
+- `{filename}_edges.png`: Edge map visualization
+- `{filename}_gray.png`: Blue channel grayscale image
+- `{filename}_binary.png`: Binary threshold mask
+- `{filename}_histogram.png`: RGB histogram with color peaks and threshold
+
+Aggregate outputs:
+- `oriflake_results.csv`: CSV file containing all detected edge segments with angles
+- `orientations_hist.png`: Histogram of all orientation angles across all images
+
+## Project Structure
+
+```
+OriFlake/
+├── oriflake/              # Main package
+│   ├── __init__.py
+│   ├── main.py            # Command-line interface and core processing
+│   ├── config.yaml        # Default configuration file
+│   ├── geometry.py        # Geometric operations
+│   ├── orientation_stats.py  # Orientation statistics
+│   ├── seg.py             # Segmentation functions
+│   └── utils.py           # Utility functions
+├── oriflake_gui.py        # GUI application
+├── requirements.txt       # Python dependencies
+├── README.md             # This file (English)
+└── README_CN.md          # Chinese documentation
+```
+
+## Dependencies
+
+See `requirements.txt` for the complete list of dependencies. Main packages include:
+- PyQt6: GUI framework
+- OpenCV (cv2): Image processing
+- NumPy: Numerical operations
+- Pandas: Data handling
+- Matplotlib: Visualization
+- SciPy: Scientific computing
+- PyYAML: Configuration file parsing
+- scikit-image: Additional image processing utilities
+- Seaborn: Statistical visualization
+
+## License
+
+[Add your license information here]
+
+## Contributing
+
+[Add contribution guidelines here]
+
+## Contact
+
+[Add contact information here]
 

@@ -1,18 +1,58 @@
-reference_deg: 0
-min_area_px: 100
-angle_tol_deg: 20
-sigma_deg: 5
-kmeans_k: 3
-bilateral_d: 7
-bilateral_sigC: 50
-bilateral_sigS: 50
-white_balance: false
-gamma: 1.0
-min_convexity: 0.6
-max_vertices: 7
-approx_epsilon_frac: 0.05
-morph_open: 2
-morph_close: 3
-union_top_n: 2
-max_area_ratio: 0.1
+# OriFlake 配置文件
+# 纳米片边缘取向统计工具
 
+# ========== 文件路径配置 ==========
+# 输入图像路径（可以是文件或文件夹）
+input: "images/testImg/20251016 r1 small S 140 Mo 700/8.png"
+# 输出文件夹路径
+output: "OriFlake_outputs"
+
+# ========== 图像预处理参数 ==========
+# 第一步：图片裁剪参数
+crop_ratio: 0.3  # 裁剪比例，0.3表示裁剪掉30%（上下左右各15%），只处理中心区域
+
+# 第二步：阈值偏移参数
+threshold_offset: 0.0  # 阈值偏移，用于微调从直方图峰值计算出的二值化阈值（正值=更高阈值，负值=更低阈值）
+
+# 第二步：灰度处理和边缘检测参数
+background_method: "gaussian"  # 扣背底方法: "gaussian" 或 "median"（当前未使用，保留用于兼容）
+peak_min_distance: 20  # 两个峰之间的最小距离（灰度值）
+
+# ========== 分割参数 ==========
+# 形态学清理分割结果
+morph_open_ks: 3  # 形态学opening核大小，用于清理分割结果（去除噪点）
+morph_close_ks: 10  # 形态学closing核大小（0表示不进行closing，避免连接独立结构）
+
+# ========== 边界提取参数 ==========
+# 边界提取的形态学操作（较小的值使边缘更锐利）
+boundary_kernel_size: 1  # 边界提取的形态学核大小（减小使边缘更细）
+boundary_dilate_iterations: 1 # 边界提取的膨胀/腐蚀迭代次数（保持为1，避免边缘变粗）
+
+# 边缘清理参数（较小的值使边缘更锐利）
+edge_cleanup_kernel_size: 1  # 边缘清理的核大小（减小使边缘更细）
+edge_cleanup_iterations: 1  # 边缘清理的迭代次数（保持为1，避免过度清理）
+
+# ========== 边界过滤参数 ==========
+# 最小轮廓面积
+min_contour_area: 100  # 最小轮廓面积（像素），用于过滤小的边缘连通域
+
+# 图像边框过滤
+border_margin: 10  # 图像边界过滤的像素数（排除图像边缘多少像素）
+border_area_threshold: 0.1  # 图像边框判断的面积阈值（相对于图像总面积的比值）
+border_width_threshold: 0.8  # 图像边框判断的宽度阈值（相对于图像宽度的比值）
+
+# ========== 线段拟合参数 ==========
+# Hough变换参数
+min_line_length: 50.0  # 最小线段长度（像素），严格阈值，短边缘会被过滤
+max_line_gap: 30.0  # 最大线段间隙（像素）
+hough_threshold: 300  # Hough变换阈值
+
+# 线段去重参数
+min_segment_distance: 50.0  # 最小线段间距（像素），用于避免对同一条长边重复统计
+
+# ========== 其他参数 ==========
+# 详细日志输出
+verbose: true  # 是否打印详细日志
+
+# 预览窗口
+preview: false  # 是否显示预览窗口
