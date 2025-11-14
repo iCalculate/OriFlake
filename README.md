@@ -106,7 +106,7 @@ Launch the graphical user interface:
 python oriflake_gui.py
 ```
 
-![GUIscreenshot](images\GUIscreenshot.png)
+![GUIscreenshot](images/GUIscreenshot.png)
 
 The GUI provides:
 
@@ -120,7 +120,7 @@ The GUI provides:
 
 ### Processing Pipeline
 
-![Process](images\Process.png)
+![Process](images/Process.png)
 
 The image processing pipeline consists of the following steps:
 
